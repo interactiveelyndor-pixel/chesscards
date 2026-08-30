@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "333035118591",
+    "project_id": "spook-a-chess",
+    "storage_bucket": "spook-a-chess.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:333035118591:android:7bb29e0b41fbe87b8791ca",
+        "android_client_info": {
+          "package_name": "com.spookachess.game"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkkb_c8VraGOC7Xk3DNl8GG3svqvSgJgc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:333035118591:android:7bb29e0b41fbe87b8791ca",
+        "android_client_info": {
+          "package_name": "com.example.super_chess"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkkb_c8VraGOC7Xk3DNl8GG3svqvSgJgc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
