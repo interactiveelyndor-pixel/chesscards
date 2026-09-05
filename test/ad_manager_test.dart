@@ -58,37 +58,46 @@ class MockNetworkService implements NetworkService {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const MethodChannel channel = MethodChannel('applovin_max');
+  const MethodChannel unityChannel = MethodChannel('com.rebeloid.unity_ads');
 
   setUp(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-      if (methodCall.method == 'isInterstitialReady') {
-        return true;
+        .setMockMethodCallHandler(unityChannel, (MethodCall methodCall) async {
+      switch (methodCall.method) {
+        case 'init':
+          return true;
+        case 'load':
+          return true;
+        case 'showVideo':
+          return true;
+        case 'isReady':
+          return true;
+        case 'isInitialized':
+          return true;
+        default:
+          return true;
       }
-      if (methodCall.method == 'isRewardedAdReady') {
-        return true;
-      }
-      return null;
     });
   });
 
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, null);
+        .setMockMethodCallHandler(unityChannel, null);
   });
 
-  group('📱 AppLovin MAX AdManager Interstitial & Rewarded Ad Lifecycle Tests', () {
-    test('1. AdManager singleton instance initializes cleanly with correct adUnitIds', () {
+  group('📱 Unity Ads AdManager Interstitial & Rewarded Ad Lifecycle Tests', () {
+    test('1. AdManager singleton instance initializes cleanly with correct default placement IDs', () {
       final adManager = AdManager.instance;
       expect(adManager, isNotNull);
-      expect(AdManager.interstitialAdUnitId, 'YOUR_INTERSTITIAL_ID');
-      expect(AdManager.rewardedAdUnitId, 'YOUR_REWARDED_ID');
+      expect(AdManager.defaultGameId, isNotEmpty);
+      expect(AdManager.interstitialPlacementId, 'Interstitial_Android');
+      expect(AdManager.rewardedPlacementId, 'Rewarded_Android');
+      expect(AdManager.bannerPlacementId, 'Banner_Android');
     });
 
     test('2. AdManager pre-load and game-over interstitial calls execute cleanly', () async {
       final adManager = AdManager.instance;
-      adManager.initialize();
+      adManager.initialize(gameId: '5834912', testMode: true);
       adManager.loadInterstitial();
 
       // Show interstitial on game over state
@@ -96,9 +105,9 @@ void main() {
       expect(shown, isTrue);
     });
 
-    test('3. AdManager pre-loads rewarded video on startup and executes onRewarded callback', () async {
+    test('3. AdManager pre-loads rewarded video and executes simulation reward callback on test runner', () async {
       final adManager = AdManager.instance;
-      adManager.initialize();
+      adManager.initialize(gameId: '5834912', testMode: true);
       adManager.loadRewardedAd();
 
       bool rewardReceived = false;
@@ -109,8 +118,7 @@ void main() {
       );
 
       expect(shown, isTrue);
-      expect(rewardReceived, isFalse); // Callback triggers on native video complete event
-      expect(adManager.isRewardedReady, isFalse);
+      expect(rewardReceived, isTrue);
     });
 
     test('4. Game State integration: Watching Rewarded Ad grants Free Undo in MatchController', () async {

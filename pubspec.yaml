@@ -24,7 +24,7 @@ dependencies:
   firebase_crashlytics: ^5.2.7
   firebase_analytics: ^12.4.6
   flutter_native_splash: ^2.4.7
-  applovin_max: ^4.6.4
+  unity_ads_plugin: ^0.5.0
 
 dev_dependencies:
   flutter_test:

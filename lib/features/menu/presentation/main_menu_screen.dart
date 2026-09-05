@@ -12,7 +12,7 @@ import '../../../../core/audio/audio_enums.dart';
 import '../../../../shared/widgets/gothic_button.dart';
 import '../../../../shared/widgets/gothic_background.dart';
 import '../../../../shared/widgets/flying_bats.dart';
-import '../../ads/presentation/widgets/max_banner_ad_widget.dart';
+import '../../ads/presentation/widgets/unity_banner_ad_widget.dart';
 class MainMenuScreen extends ConsumerStatefulWidget {
   const MainMenuScreen({super.key});
 
@@ -198,8 +198,8 @@ class _MainMenuScreenState extends ConsumerState<MainMenuScreen>
                         ),
                       ),
 
-                      // --- AppLovin MAX Banner Ad ---
-                      const MaxBannerAdWidget(
+                      // --- Unity Ads Banner Ad ---
+                      const UnityBannerAdWidget(
                         topPadding: 12,
                         bottomPadding: 8,
                       ),

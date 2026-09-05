@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:applovin_max/applovin_max.dart';
 import 'app/app.dart';
 import 'core/services/settings_service.dart';
 import 'core/services/ad_manager.dart';
@@ -17,15 +16,13 @@ void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   
-  // Initialize AppLovin MAX SDK before game UI loads
+  // Initialize Unity Ads SDK before game UI loads
   try {
     if (!kIsWeb) {
-      await AppLovinMAX.initialize('YOUR_SDK_KEY');
-      // Attach InterstitialListener and pre-load full-screen interstitial ad on launch
       AdManager.instance.initialize();
     }
   } catch (e) {
-    debugPrint('AppLovin MAX initialization error: $e');
+    debugPrint('Unity Ads initialization error: $e');
   }
 
   try {

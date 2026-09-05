@@ -41,7 +41,7 @@ import 'widgets/pause_menu_overlay.dart';
 import '../../tutorial/presentation/ftue_tutorial_overlay.dart';
 import '../../tutorial/application/tutorial_controller.dart';
 import '../../../../shared/widgets/gothic_background.dart';
-import '../../ads/presentation/widgets/max_banner_ad_widget.dart';
+import '../../ads/presentation/widgets/unity_banner_ad_widget.dart';
 import '../../../../core/services/ad_manager.dart';
 
 class MatchScreen extends ConsumerStatefulWidget {
@@ -556,9 +556,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   ),
                 ),
 
-                // ── AppLovin MAX Banner Ad (with 50px padding to avoid accidental clicks) ──
-                const MaxBannerAdWidget(
-                  adUnitId: 'YOUR_BANNER_AD_UNIT_ID',
+                // ── Unity Ads Banner Ad (with 50px padding to avoid accidental clicks) ──
+                const UnityBannerAdWidget(
+                  placementId: 'Banner_Android',
                   topPadding: 50.0,
                   bottomPadding: 4.0,
                 ),
