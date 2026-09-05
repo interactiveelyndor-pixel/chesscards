@@ -11,8 +11,8 @@ class AdManager {
   static final AdManager instance = AdManager._internal();
   AdManager._internal();
 
-  /// Default Unity Game ID (Replace with your Unity Game ID from cloud.unity.com)
-  static const String defaultGameId = '5834912';
+  /// Official Unity Android Game ID for Spook-a-Chess: Battle Tactics
+  static const String defaultGameId = '800368058';
 
   /// Standard Unity Placement IDs
   static const String interstitialPlacementId = 'Interstitial_Android';
@@ -33,16 +33,17 @@ class AdManager {
           defaultTargetPlatform == TargetPlatform.iOS);
 
   /// Initializes the Unity Ads SDK before game UI loads.
-  void initialize({String gameId = defaultGameId, bool testMode = true}) {
+  void initialize({String gameId = defaultGameId, bool? testMode}) {
     if (!_isSupportedPlatform) return;
+    final isTest = testMode ?? kDebugMode;
 
     try {
       UnityAds.init(
         gameId: gameId,
-        testMode: testMode,
+        testMode: isTest,
         onComplete: () {
           _isInitialized = true;
-          debugPrint('Unity Ads Initialized successfully with Game ID: $gameId (testMode: $testMode)');
+          debugPrint('Unity Ads Initialized successfully with Game ID: $gameId (testMode: $isTest)');
           loadInterstitial();
           loadRewardedAd();
         },
