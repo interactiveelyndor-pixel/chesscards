@@ -216,6 +216,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
     ref.listen(matchControllerProvider, (prev, next) {
       if (prev != null &&
+          next.isOnlineMode &&
           next.result != null &&
           next.result!.reason == 'Opponent Disconnected' &&
           prev.result?.reason != 'Opponent Disconnected') {

@@ -51,6 +51,7 @@ class MatchController extends StateNotifier<MatchState> {
   void _initNetworkListeners() {
     final network = _ref.read(networkServiceProvider);
     network.onActionReceived = (data) {
+      if (!state.isOnlineMode || state.phase == TurnPhase.gameOver) return;
       if (data['type'] == 'move') {
         final from = BoardPosition(data['from']['row'], data['from']['col']);
         final to = BoardPosition(data['to']['row'], data['to']['col']);
@@ -78,7 +79,7 @@ class MatchController extends StateNotifier<MatchState> {
     };
 
     network.onOpponentDisconnected = () {
-      if (state.phase == TurnPhase.gameOver) return;
+      if (!state.isOnlineMode || state.phase == TurnPhase.gameOver) return;
 
       final player = state.onlineColor ?? PieceColor.white;
       _logAction('Opponent disconnected!', player, important: true);
@@ -118,10 +119,14 @@ class MatchController extends StateNotifier<MatchState> {
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (state.phase == TurnPhase.gameOver || state.showTurnPass) return;
-      if (_aiThinking || state.pendingPromotion != null) return;
-      if (!state.isLocalMode && !state.isAiMode && !state.isOnlineMode) return;
-
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (state.phase == TurnPhase.gameOver) {
+        timer.cancel();
+        return;
+      }
       if (state.isOnlineMode && !isMyTurn) return;
 
       if (state.secondsRemaining > 0) {
@@ -132,20 +137,30 @@ class MatchController extends StateNotifier<MatchState> {
   }
 
   void startAiMatch({AiDifficulty difficulty = AiDifficulty.haunted}) {
+    _ref.read(networkServiceProvider).leaveMatch();
+    _aiThinking = false;
     state = MatchState.initial().copyWith(
       isAiMode: true,
       isLocalMode: false,
+      isOnlineMode: false,
       aiDifficulty: difficulty,
     );
     _startTimer();
   }
 
   void startLocalMatch() {
-    state = MatchState.initial();
+    _ref.read(networkServiceProvider).leaveMatch();
+    _aiThinking = false;
+    state = MatchState.initial().copyWith(
+      isAiMode: false,
+      isLocalMode: true,
+      isOnlineMode: false,
+    );
     _startTimer();
   }
 
   void startOnlineMatch({required bool isPlayer1}) {
+    _aiThinking = false;
     state = MatchState.initial().copyWith(
       isAiMode: false,
       isLocalMode: false,
