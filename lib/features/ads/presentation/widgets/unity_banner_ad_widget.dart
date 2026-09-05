@@ -14,18 +14,15 @@ class UnityBannerAdWidget extends StatelessWidget {
   const UnityBannerAdWidget({
     super.key,
     this.placementId = 'Banner_Android',
-    this.topPadding = 50.0,
-    this.bottomPadding = 4.0,
+    this.topPadding = 4.0,
+    this.bottomPadding = 2.0,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Only render native UnityBannerAd on supported mobile platforms
+    // Return empty on web/desktop so no dead space is shown
     if (kIsWeb || (defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS)) {
-      return Padding(
-        padding: EdgeInsets.only(top: topPadding, bottom: bottomPadding),
-        child: const SizedBox(height: 50),
-      );
+      return const SizedBox.shrink();
     }
 
     return Padding(

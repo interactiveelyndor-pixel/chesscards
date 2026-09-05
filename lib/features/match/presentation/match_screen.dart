@@ -556,11 +556,11 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                   ),
                 ),
 
-                // ── Unity Ads Banner Ad (with 50px padding to avoid accidental clicks) ──
+                // ── Unity Ads Banner Ad (Clean mobile bottom dock) ──
                 const UnityBannerAdWidget(
                   placementId: 'Banner_Android',
-                  topPadding: 50.0,
-                  bottomPadding: 4.0,
+                  topPadding: 4.0,
+                  bottomPadding: 2.0,
                 ),
               ],
             ),
