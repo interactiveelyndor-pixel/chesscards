@@ -410,50 +410,6 @@ class _FallbackLogo extends StatelessWidget {
   }
 }
 
-class _CheckeredShieldPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Path shieldPath = Path()
-      ..moveTo(size.width * 0.5, size.height * 0.05)
-      ..lineTo(size.width * 0.95, size.height * 0.2)
-      ..lineTo(size.width * 0.95, size.height * 0.55)
-      ..quadraticBezierTo(size.width * 0.9, size.height * 0.85, size.width * 0.5, size.height * 0.98)
-      ..quadraticBezierTo(size.width * 0.1, size.height * 0.85, size.width * 0.05, size.height * 0.55)
-      ..lineTo(size.width * 0.05, size.height * 0.2)
-      ..close();
-
-    canvas.save();
-    canvas.clipPath(shieldPath);
-
-    final midX = size.width * 0.5;
-    final midY = size.height * 0.5;
-
-    final darkPaint = Paint()..color = const Color(0xFF18050C);
-    final redPaint = Paint()..color = const Color(0xFFE5383B);
-
-    // Quadrant 1 (Top-Left: Dark)
-    canvas.drawRect(Rect.fromLTRB(0, 0, midX, midY), darkPaint);
-    // Quadrant 2 (Top-Right: Red)
-    canvas.drawRect(Rect.fromLTRB(midX, 0, size.width, midY), redPaint);
-    // Quadrant 3 (Bottom-Left: Red)
-    canvas.drawRect(Rect.fromLTRB(0, midY, midX, size.height), redPaint);
-    // Quadrant 4 (Bottom-Right: Dark)
-    canvas.drawRect(Rect.fromLTRB(midX, midY, size.width, size.height), darkPaint);
-
-    canvas.restore();
-
-    // Shield outline
-    final borderPaint = Paint()
-      ..color = const Color(0xFFFF8FA3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(shieldPath, borderPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
 
 // ────────────────────────────────────────
 // Bottom Navigation Bar

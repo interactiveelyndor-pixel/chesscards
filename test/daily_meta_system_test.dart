@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:super_chess/features/daily/application/daily_controller.dart';
 import 'package:super_chess/features/daily/domain/daily_reward_state.dart';
 import 'package:super_chess/features/daily/domain/daily_contract.dart';
-import 'package:super_chess/features/daily/domain/daily_puzzle.dart';
 import 'package:super_chess/features/store/application/store_controller.dart';
 import 'package:super_chess/features/board/domain/board_position.dart';
 import 'package:super_chess/features/match/domain/chess_engine.dart';

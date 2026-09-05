@@ -35,7 +35,6 @@ class _GothicBackgroundState extends State<GothicBackground>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: AppColors.abyssBlack,
       body: Stack(

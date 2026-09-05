@@ -2,7 +2,6 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:super_chess/features/board/domain/board_position.dart';
 import 'package:super_chess/features/board/domain/game_board.dart';
-import 'package:super_chess/features/match/domain/chess_ai.dart';
 import 'package:super_chess/features/match/domain/chess_engine.dart';
 import 'package:super_chess/features/match/domain/chess_move.dart';
 import 'package:super_chess/features/match/domain/game_state.dart';
@@ -76,8 +75,6 @@ void main() {
     // SECTION 2: ALL 8 SPELLS ON ALL 64 TILES
     // ─────────────────────────────────────────────────────────────────────────
     test('2. Spell Matrix: Blizzard 3x3 radius correctly clamps on all 64 tiles without error', () {
-      final spells = [const BlizzardSpell()];
-
       for (int r = 0; r < 8; r++) {
         for (int c = 0; c < 8; c++) {
           final target = BoardPosition(r, c);

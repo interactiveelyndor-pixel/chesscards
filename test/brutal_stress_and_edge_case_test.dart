@@ -12,7 +12,6 @@ import 'package:super_chess/features/match/domain/game_status.dart';
 import 'package:super_chess/features/match/domain/match_state.dart';
 import 'package:super_chess/features/match/domain/turn_phase.dart';
 import 'package:super_chess/features/pieces/domain/chess_piece.dart';
-import 'package:super_chess/features/relics/domain/relic.dart';
 import 'package:super_chess/features/relics/domain/relics.dart';
 import 'package:super_chess/features/spells/domain/spells.dart';
 import 'package:super_chess/features/spells/domain/spell_engine.dart';

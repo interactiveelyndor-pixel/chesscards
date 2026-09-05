@@ -478,8 +478,6 @@ class _StoreItemCard extends StatelessWidget {
         return Icons.grid_4x4_rounded;
       case StoreItemType.currency:
         return Icons.monetization_on_rounded;
-      default:
-        return Icons.help_outline;
     }
   }
 }

@@ -5,7 +5,6 @@ import 'package:super_chess/features/board/domain/board_position.dart';
 import 'package:super_chess/features/board/domain/game_board.dart';
 import 'package:super_chess/features/match/domain/chess_ai.dart';
 import 'package:super_chess/features/match/domain/chess_engine.dart';
-import 'package:super_chess/features/match/domain/chess_move.dart';
 import 'package:super_chess/features/match/domain/game_state.dart';
 import 'package:super_chess/features/match/domain/game_status.dart';
 import 'package:super_chess/features/match/domain/turn_phase.dart';

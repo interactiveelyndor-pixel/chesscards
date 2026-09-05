@@ -690,8 +690,10 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 title: 'Make Your Move',
                 message: 'The board is yours. Tap a piece to move it, just like normal chess.',
                 isLeftAligned: true,
-                showBarrier: false, // Let them tap the board
-                onDismiss: null, // Don't allow manual dismiss, forced to move
+                showBarrier: false,
+                onDismiss: () {
+                  ref.read(tutorialControllerProvider.notifier).completeStep(TutorialStep.firstMove);
+                },
               ),
             ),
           
@@ -701,7 +703,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 title: 'The Arcane Arts',
                 message: 'You have generated Mana. Tap a Spell card below to cast it and turn the tide!',
                 isLeftAligned: false,
-                showBarrier: false, // Let them tap the cards
+                showBarrier: false,
                 onDismiss: () {
                   ref.read(tutorialControllerProvider.notifier).completeStep(TutorialStep.spellIntro);
                 },

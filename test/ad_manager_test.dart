@@ -52,7 +52,6 @@ class MockNetworkService implements NetworkService {
   Future<void> sendEndTurnAction() async {}
   @override
   Future<void> leaveMatch() async {}
-  @override
   void dispose() {}
 }
 
@@ -110,7 +109,7 @@ void main() {
       );
 
       expect(shown, isTrue);
-      // In mock channel test environment, callback is hooked
+      expect(rewardReceived, isFalse); // Callback triggers on native video complete event
       expect(adManager.isRewardedReady, isFalse);
     });
 

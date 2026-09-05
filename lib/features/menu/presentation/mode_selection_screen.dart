@@ -6,8 +6,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../theme/app_colors.dart';
 import '../../match/application/match_controller.dart';
 import '../../../../shared/widgets/gothic_background.dart';
-import '../../../../shared/widgets/gothic_button.dart';
-import '../../../../shared/widgets/flying_bats.dart';
 import '../../tutorial/application/tutorial_controller.dart';
 
 class ModeSelectionScreen extends ConsumerWidget {
