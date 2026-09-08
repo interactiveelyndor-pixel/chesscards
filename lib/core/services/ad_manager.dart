@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
@@ -22,6 +23,7 @@ class AdManager {
   bool _isInitialized = false;
   bool _isInterstitialReady = false;
   bool _isRewardedReady = false;
+  bool simulationMode = false;
 
   bool get isInitialized => _isInitialized;
   bool get isInterstitialReady => _isInterstitialReady;
@@ -138,7 +140,7 @@ class AdManager {
     String placementId = rewardedPlacementId,
     required VoidCallback onRewarded,
   }) async {
-    if (!_isSupportedPlatform) {
+    if (simulationMode || !_isSupportedPlatform) {
       // In development/test/unsupported platforms, grant reward directly for simulation
       onRewarded();
       return true;

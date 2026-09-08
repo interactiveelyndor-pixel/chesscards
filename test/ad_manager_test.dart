@@ -69,6 +69,7 @@ void main() {
         case 'load':
           return true;
         case 'showVideo':
+          // In test environment, UnityAds invokes onComplete callback synchronously
           return true;
         case 'isReady':
           return true;
@@ -97,7 +98,7 @@ void main() {
 
     test('2. AdManager pre-load and game-over interstitial calls execute cleanly', () async {
       final adManager = AdManager.instance;
-      adManager.initialize(gameId: '5834912', testMode: true);
+      adManager.initialize(gameId: '800368058', testMode: true);
       adManager.loadInterstitial();
 
       // Show interstitial on game over state
@@ -107,7 +108,8 @@ void main() {
 
     test('3. AdManager pre-loads rewarded video and executes simulation reward callback on test runner', () async {
       final adManager = AdManager.instance;
-      adManager.initialize(gameId: '5834912', testMode: true);
+      adManager.simulationMode = true;
+      adManager.initialize(gameId: '800368058', testMode: true);
       adManager.loadRewardedAd();
 
       bool rewardReceived = false;
