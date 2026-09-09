@@ -127,12 +127,12 @@ class NetworkService {
            onMatchStart!(opponent);
         }
 
-        // Check heartbeat
+        // Check heartbeat with robust timeout
         final opponentField = isPlayer1 ? 'player2Heartbeat' : 'player1Heartbeat';
         final Timestamp? oppHeartbeat = data[opponentField];
         if (oppHeartbeat != null) {
            final diff = DateTime.now().difference(oppHeartbeat.toDate());
-           if (diff.inSeconds > 15) {
+           if (diff.inSeconds > 45) {
              if (onOpponentDisconnected != null) onOpponentDisconnected!();
            }
         }

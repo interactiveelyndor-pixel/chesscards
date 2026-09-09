@@ -60,8 +60,9 @@ class MatchController extends StateNotifier<MatchState> {
           promo = PieceType.values.firstWhere((e) => e.name == data['promotion']);
         }
         _handleNetworkMove(from, to, promo);
-      } else if (data['type'] == 'spell') {
-        final spell = _getSpellById(data['spellId']);
+      } else if (data['type'] == 'spell' || data['type'] == 'card') {
+        final spellId = data['spellId'] ?? data['cardId'];
+        final spell = _getSpellById(spellId);
         BoardPosition? primary;
         BoardPosition? secondary;
         if (data['primary'] != null) {

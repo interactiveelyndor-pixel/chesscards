@@ -19,6 +19,7 @@ class LobbyScreen extends ConsumerStatefulWidget {
 
 class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   bool _isSearching = false;
+  bool _matchStarted = false;
 
   @override
   void initState() {
@@ -29,10 +30,14 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
   }
 
   void _startSearch() async {
-    setState(() => _isSearching = true);
+    setState(() {
+      _isSearching = true;
+      _matchStarted = false;
+    });
     final network = ref.read(networkServiceProvider);
     
     network.onMatchStart = (opponentId) {
+      _matchStarted = true;
       ref.read(matchControllerProvider.notifier).startOnlineMatch(isPlayer1: network.isPlayer1); 
 
       if (mounted) {
@@ -54,7 +59,9 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
   @override
   void dispose() {
-    ref.read(networkServiceProvider).leaveMatch();
+    if (!_matchStarted) {
+      ref.read(networkServiceProvider).leaveMatch();
+    }
     super.dispose();
   }
 

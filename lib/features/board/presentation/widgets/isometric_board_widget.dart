@@ -27,6 +27,7 @@ class IsometricBoardWidget extends StatefulWidget {
   final double tileWidth;
   final double tileHeight;
   final String? equippedBoardId;
+  final bool isFlipped;
 
   const IsometricBoardWidget({
     super.key,
@@ -45,6 +46,7 @@ class IsometricBoardWidget extends StatefulWidget {
     this.tileWidth = 48,
     this.tileHeight = 48,
     this.equippedBoardId,
+    this.isFlipped = false,
   });
 
   @override
@@ -160,7 +162,7 @@ class _IsometricBoardWidgetState extends State<IsometricBoardWidget> with Ticker
                     localPos.dx - (constraints.maxWidth - 8 * dynamicTileSize) / 2,
                     localPos.dy - (constraints.maxHeight - 8 * dynamicTileSize) / 2,
                   );
-                  final BoardTile? tile = BoardGeometry.screenToBoard(boardPos, dynamicTileSize, dynamicTileSize);
+                  final BoardTile? tile = BoardGeometry.screenToBoard(boardPos, dynamicTileSize, dynamicTileSize, isFlipped: widget.isFlipped);
                   if (tile != _localHover) {
                     setState(() {
                       _localHover = tile;
@@ -175,7 +177,7 @@ class _IsometricBoardWidgetState extends State<IsometricBoardWidget> with Ticker
                       localPos.dx - (constraints.maxWidth - 8 * dynamicTileSize) / 2,
                       localPos.dy - (constraints.maxHeight - 8 * dynamicTileSize) / 2,
                     );
-                    final BoardTile? tile = BoardGeometry.screenToBoard(boardPos, dynamicTileSize, dynamicTileSize);
+                    final BoardTile? tile = BoardGeometry.screenToBoard(boardPos, dynamicTileSize, dynamicTileSize, isFlipped: widget.isFlipped);
                     if (tile != null) {
                       widget.onTileTap(tile);
                     }
@@ -186,7 +188,7 @@ class _IsometricBoardWidgetState extends State<IsometricBoardWidget> with Ticker
                       localPos.dx - (constraints.maxWidth - 8 * dynamicTileSize) / 2,
                       localPos.dy - (constraints.maxHeight - 8 * dynamicTileSize) / 2,
                     );
-                    final BoardTile? tile = BoardGeometry.screenToBoard(boardPos, dynamicTileSize, dynamicTileSize);
+                    final BoardTile? tile = BoardGeometry.screenToBoard(boardPos, dynamicTileSize, dynamicTileSize, isFlipped: widget.isFlipped);
                     if (tile != null && widget.gameState != null) {
                       final piece = widget.gameState!.board.pieceAt(BoardPosition(tile.row, tile.col));
                       if (piece != null) {
@@ -223,6 +225,7 @@ class _IsometricBoardWidgetState extends State<IsometricBoardWidget> with Ticker
                               tileHeight: dynamicTileSize,
                               glowAnimationValue: _glowController.value,
                               equippedBoardId: widget.equippedBoardId,
+                              isFlipped: widget.isFlipped,
                             ),
                           ),
                         ),
@@ -254,7 +257,8 @@ class _IsometricBoardWidgetState extends State<IsometricBoardWidget> with Ticker
                     _animatingCardTarget!.row, 
                     _animatingCardTarget!.col, 
                     dynamicTileSize, 
-                    dynamicTileSize
+                    dynamicTileSize,
+                    isFlipped: widget.isFlipped,
                   );
                   
                   // Add the board offset
@@ -293,7 +297,8 @@ class _IsometricBoardWidgetState extends State<IsometricBoardWidget> with Ticker
                     _captureTarget!.row, 
                     _captureTarget!.col, 
                     dynamicTileSize, 
-                    dynamicTileSize
+                    dynamicTileSize,
+                    isFlipped: widget.isFlipped,
                   );
                   
                   final Offset boardOffset = Offset(

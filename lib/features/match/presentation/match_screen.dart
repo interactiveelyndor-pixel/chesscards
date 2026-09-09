@@ -23,6 +23,7 @@ import '../../../shared/enums/piece_color.dart';
 import '../../../shared/enums/piece_type.dart';
 import '../../../../core/audio/audio_service.dart';
 import '../../../../core/audio/audio_enums.dart';
+import '../../../../core/network/network_service.dart';
 import '../../store/application/store_controller.dart';
 
 import '../application/match_controller.dart';
@@ -89,6 +90,9 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     _playerSub?.cancel();
     _opponentSub?.cancel();
     ref.read(audioServiceProvider).stopBgm();
+    if (ref.read(matchControllerProvider).isOnlineMode) {
+      ref.read(networkServiceProvider).leaveMatch();
+    }
     super.dispose();
   }
 
@@ -317,10 +321,19 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
     final Color playerAccent = isBottomActive ? AppColors.runeGold : AppColors.fogGray.withValues(alpha: 0.5);
     final Color opponentAccent = isTopActive ? AppColors.runeGold : AppColors.ghostBlue.withValues(alpha: 0.5);
 
-    final String playerName = isLocalMultiplayer ? (isWhiteTurn ? 'White Player' : 'Black Player') : 'You';
-    final String opponentName = isLocalMultiplayer
-        ? (isWhiteTurn ? 'Black Player' : 'White Player')
-        : (matchState.isAiMode ? 'The Spirit' : 'Opponent');
+    final String playerName;
+    final String opponentName;
+    if (isLocalMultiplayer) {
+      playerName = isWhiteTurn ? 'White Player' : 'Black Player';
+      opponentName = isWhiteTurn ? 'Black Player' : 'White Player';
+    } else if (matchState.isOnlineMode) {
+      final isWhite = matchState.onlineColor == PieceColor.white;
+      playerName = isWhite ? 'You (White)' : 'You (Black)';
+      opponentName = isWhite ? 'Opponent (Black)' : 'Opponent (White)';
+    } else {
+      playerName = 'You';
+      opponentName = matchState.isAiMode ? 'The Spirit' : 'Opponent';
+    }
 
     final tutorialStep = ref.watch(tutorialControllerProvider);
     
@@ -333,6 +346,8 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
 
     final bool playerCritical = playerDoll.health / playerDoll.maxHealth <= 0.30;
     final bool opponentCritical = opponentDoll.health / opponentDoll.maxHealth <= 0.30;
+
+    final bool isBoardFlipped = matchState.isOnlineMode && matchState.onlineColor == PieceColor.black;
 
     return Scaffold(
       backgroundColor: AppColors.abyssBlack,
@@ -401,6 +416,7 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         child: IsometricBoardWidget(
                           gameState: matchState.gameState,
                           equippedBoardId: storeState.equippedBoardId,
+                          isFlipped: isBoardFlipped,
                           selectedTile: matchState.selectedTile != null
                               ? BoardTile(matchState.selectedTile!.row,
                                   matchState.selectedTile!.col)

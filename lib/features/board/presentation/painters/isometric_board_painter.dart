@@ -21,6 +21,7 @@ class IsometricBoardPainter extends CustomPainter {
   final double tileHeight;
   final double glowAnimationValue;
   final String? equippedBoardId;
+  final bool isFlipped;
 
   IsometricBoardPainter({
     this.gameState,
@@ -35,6 +36,7 @@ class IsometricBoardPainter extends CustomPainter {
     required this.tileHeight,
     this.glowAnimationValue = 1.0,
     this.equippedBoardId,
+    this.isFlipped = false,
   });
 
   @override
@@ -97,7 +99,7 @@ class IsometricBoardPainter extends CustomPainter {
   void _drawTile(Canvas canvas, int row, int col) {
     final bool isDark = (row + col) % 2 != 0;
 
-    final Offset center = BoardGeometry.boardToScreen(row, col, tileWidth, tileHeight);
+    final Offset center = BoardGeometry.boardToScreen(row, col, tileWidth, tileHeight, isFlipped: isFlipped);
     final Rect tileRect = Rect.fromCenter(center: center, width: tileWidth, height: tileHeight);
     final Path path = Path()..addRect(tileRect);
 
@@ -268,9 +270,9 @@ class IsometricBoardPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     );
 
-    // Draw A-H (columns) along row 7 (bottom)
+    // Draw A-H (columns) along bottom edge
     for (int col = 0; col < 8; col++) {
-      final Offset pos = BoardGeometry.boardToScreen(7, col, tileWidth, tileHeight);
+      final Offset pos = BoardGeometry.boardToScreen(isFlipped ? 0 : 7, col, tileWidth, tileHeight, isFlipped: isFlipped);
       textPainter.text = TextSpan(text: String.fromCharCode(65 + col), style: textStyle);
       textPainter.layout();
       textPainter.paint(
@@ -279,9 +281,9 @@ class IsometricBoardPainter extends CustomPainter {
       );
     }
 
-    // Draw 1-8 (rows) along col 0 (left)
+    // Draw 1-8 (rows) along left edge
     for (int row = 0; row < 8; row++) {
-      final Offset pos = BoardGeometry.boardToScreen(row, 0, tileWidth, tileHeight);
+      final Offset pos = BoardGeometry.boardToScreen(row, isFlipped ? 7 : 0, tileWidth, tileHeight, isFlipped: isFlipped);
       textPainter.text = TextSpan(text: '${8 - row}', style: textStyle);
       textPainter.layout();
       textPainter.paint(
@@ -300,11 +302,12 @@ class IsometricBoardPainter extends CustomPainter {
       for (int col = 0; col < 8; col++) {
         final piece = gameState!.board.pieceAt(BoardPosition(row, col));
         if (piece != null) {
+          final int depth = isFlipped ? (7 - row) + (7 - col) : row + col;
           piecesToDraw.add({
             'row': row,
             'col': col,
             'piece': piece,
-            'depth': row + col,
+            'depth': depth,
           });
         }
       }
@@ -321,8 +324,8 @@ class IsometricBoardPainter extends CustomPainter {
       // Animate piece movement
       Offset center;
       if (animatingMove != null && animatingMove!.to.row == row && animatingMove!.to.col == col) {
-        final Offset startCenter = BoardGeometry.boardToScreen(animatingMove!.from.row, animatingMove!.from.col, tileWidth, tileHeight);
-        final Offset targetCenter = BoardGeometry.boardToScreen(row, col, tileWidth, tileHeight);
+        final Offset startCenter = BoardGeometry.boardToScreen(animatingMove!.from.row, animatingMove!.from.col, tileWidth, tileHeight, isFlipped: isFlipped);
+        final Offset targetCenter = BoardGeometry.boardToScreen(row, col, tileWidth, tileHeight, isFlipped: isFlipped);
         
         // Arc animation: move up in Y during slide
         final double curve = Curves.easeInOut.transform(moveAnimationProgress);
@@ -333,7 +336,7 @@ class IsometricBoardPainter extends CustomPainter {
           startCenter.dy + (targetCenter.dy - startCenter.dy) * curve - arcHeight,
         );
       } else {
-        center = BoardGeometry.boardToScreen(row, col, tileWidth, tileHeight);
+        center = BoardGeometry.boardToScreen(row, col, tileWidth, tileHeight, isFlipped: isFlipped);
       }
       
       // Draw Hand-Drawn 2D Stylized Cartoon Piece
