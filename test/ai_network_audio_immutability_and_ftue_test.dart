@@ -320,12 +320,18 @@ void main() {
       expect(container.read(tutorialControllerProvider), TutorialStep.matchIntro);
 
       tutorialController.completeStep(TutorialStep.matchIntro);
+      expect(container.read(tutorialControllerProvider), TutorialStep.combatRules);
+
+      tutorialController.completeStep(TutorialStep.combatRules);
       expect(container.read(tutorialControllerProvider), TutorialStep.firstMove);
 
       tutorialController.completeStep(TutorialStep.firstMove);
       expect(container.read(tutorialControllerProvider), TutorialStep.spellIntro);
 
       tutorialController.completeStep(TutorialStep.spellIntro);
+      expect(container.read(tutorialControllerProvider), TutorialStep.relicIntro);
+
+      tutorialController.completeStep(TutorialStep.relicIntro);
       expect(container.read(tutorialControllerProvider), TutorialStep.completed);
       expect(settingsService.tutorialProgress, TutorialStep.completed.index);
 

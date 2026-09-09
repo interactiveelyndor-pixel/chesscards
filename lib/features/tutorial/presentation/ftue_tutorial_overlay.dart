@@ -7,6 +7,8 @@ class FtueTutorialOverlay extends StatelessWidget {
   final String title;
   final String message;
   final VoidCallback? onDismiss;
+  final VoidCallback? onSkip;
+  final String? stepText;
   final String imagePath; 
   final bool isLeftAligned;
   final Widget? highlightWidget;
@@ -21,6 +23,8 @@ class FtueTutorialOverlay extends StatelessWidget {
     this.title = 'Elyndor',
     required this.message,
     this.onDismiss,
+    this.onSkip,
+    this.stepText,
     this.imagePath = 'assets/images/elyndor.png',
     this.isLeftAligned = true,
     this.highlightWidget,
@@ -139,18 +143,59 @@ class FtueTutorialOverlay extends StatelessWidget {
                                  .scale(begin: const Offset(0.7, 0.7), end: const Offset(1.3, 1.3), duration: 800.ms),
                                 const SizedBox(width: 8),
                                 Expanded(
-                                  child: Text(
-                                    title.toUpperCase(),
-                                    style: GoogleFonts.cinzelDecorative(
-                                      color: const Color(0xFFFFD166),
-                                      fontSize: isNarrow ? 14 : 16,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 1.0,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (stepText != null)
+                                        Container(
+                                          margin: const EdgeInsets.only(bottom: 2),
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFFF9E00).withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(4),
+                                            border: Border.all(color: const Color(0xFFFF9E00).withValues(alpha: 0.4), width: 0.8),
+                                          ),
+                                          child: Text(
+                                            stepText!,
+                                            style: GoogleFonts.cinzel(
+                                              color: const Color(0xFFFFBA08),
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 1.0,
+                                            ),
+                                          ),
+                                        ),
+                                      Text(
+                                        title.toUpperCase(),
+                                        style: GoogleFonts.cinzelDecorative(
+                                          color: const Color(0xFFFFD166),
+                                          fontSize: isNarrow ? 14 : 16,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 1.0,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
                                   ),
                                 ),
+                                if (onSkip != null)
+                                  GestureDetector(
+                                    onTap: onSkip,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(left: 6),
+                                      child: Text(
+                                        'SKIP',
+                                        style: GoogleFonts.cinzel(
+                                          color: const Color(0xFF888888),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.8,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
                             const SizedBox(height: 10),

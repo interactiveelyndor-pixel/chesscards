@@ -138,6 +138,8 @@ class MatchController extends StateNotifier<MatchState> {
 
   void startAiMatch({AiDifficulty difficulty = AiDifficulty.haunted}) {
     _ref.read(networkServiceProvider).leaveMatch();
+    _ref.read(playerDollProvider.notifier).reset();
+    _ref.read(opponentDollProvider.notifier).reset();
     _aiThinking = false;
     state = MatchState.initial().copyWith(
       isAiMode: true,
@@ -150,6 +152,8 @@ class MatchController extends StateNotifier<MatchState> {
 
   void startLocalMatch() {
     _ref.read(networkServiceProvider).leaveMatch();
+    _ref.read(playerDollProvider.notifier).reset();
+    _ref.read(opponentDollProvider.notifier).reset();
     _aiThinking = false;
     state = MatchState.initial().copyWith(
       isAiMode: false,
@@ -161,6 +165,8 @@ class MatchController extends StateNotifier<MatchState> {
 
   void startOnlineMatch({required bool isPlayer1}) {
     _aiThinking = false;
+    _ref.read(playerDollProvider.notifier).reset();
+    _ref.read(opponentDollProvider.notifier).reset();
     state = MatchState.initial().copyWith(
       isAiMode: false,
       isLocalMode: false,
@@ -191,6 +197,8 @@ class MatchController extends StateNotifier<MatchState> {
   void restartMatch() {
     _aiThinking = false;
     if (state.isOnlineMode) return;
+    _ref.read(playerDollProvider.notifier).reset();
+    _ref.read(opponentDollProvider.notifier).reset();
 
     state = state.isAiMode
         ? MatchState.initial().copyWith(

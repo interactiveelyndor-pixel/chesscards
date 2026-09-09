@@ -43,6 +43,7 @@ import '../../tutorial/application/tutorial_controller.dart';
 import '../../../../shared/widgets/gothic_background.dart';
 import '../../ads/presentation/widgets/unity_banner_ad_widget.dart';
 import '../../../../core/services/ad_manager.dart';
+import '../../menu/presentation/widgets/how_to_play_modal.dart';
 
 class MatchScreen extends ConsumerStatefulWidget {
   const MatchScreen({super.key});
@@ -370,6 +371,15 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                         _TurnGlyph(isActive: isTopActive, color: opponentAccent),
                         const SizedBox(width: 8),
                         _IconGlyphButton(
+                          icon: Icons.menu_book_rounded,
+                          onTap: () {
+                            ref.read(audioServiceProvider).playSfx(SfxType.buttonClick);
+                            HowToPlayModal.show(context);
+                          },
+                          color: AppColors.runeGold,
+                        ),
+                        const SizedBox(width: 8),
+                        _IconGlyphButton(
                           icon: Icons.pause_rounded,
                           onTap: () {
                             ref.read(audioServiceProvider).playSfx(SfxType.buttonClick);
@@ -673,14 +683,45 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               ),
             ),
 
+          if (_isPaused)
+            Positioned.fill(
+              child: PauseMenuOverlay(
+                onResume: () => setState(() => _isPaused = false),
+                onRestart: () {
+                  matchController.restartMatch();
+                  setState(() => _isPaused = false);
+                },
+              ),
+            ),
+
           if (tutorialStep == TutorialStep.matchIntro)
             Positioned.fill(
               child: FtueTutorialOverlay(
-                title: 'Super Chess: Spells & Relics',
-                message: 'Standard chess rules apply, but you generate Mana each turn, cast Spells from your Spellbook, and equip Relics to empower your pieces!',
+                title: 'Spook·A·Chess Overview',
+                message: 'Welcome Commander! Standard chess rules apply, but your King and army are backed by powerful Spells, magical Relics, and a Soul Doll Commander!',
+                stepText: 'STEP 1 OF 5',
                 isLeftAligned: false,
                 onDismiss: () {
                   ref.read(tutorialControllerProvider.notifier).completeStep(TutorialStep.matchIntro);
+                },
+                onSkip: () {
+                  ref.read(tutorialControllerProvider.notifier).skipTutorial();
+                },
+              ),
+            ),
+
+          if (tutorialStep == TutorialStep.combatRules)
+            Positioned.fill(
+              child: FtueTutorialOverlay(
+                title: 'Two Paths to Victory',
+                message: '1. CHECKMATE: Corner the enemy King.\n2. COMMANDER HP: Deplete enemy Doll HP to 0 by capturing enemy pieces and blasting them with Spells!',
+                stepText: 'STEP 2 OF 5',
+                isLeftAligned: true,
+                onDismiss: () {
+                  ref.read(tutorialControllerProvider.notifier).completeStep(TutorialStep.combatRules);
+                },
+                onSkip: () {
+                  ref.read(tutorialControllerProvider.notifier).skipTutorial();
                 },
               ),
             ),
@@ -688,12 +729,16 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
           if (tutorialStep == TutorialStep.firstMove)
             Positioned.fill(
               child: FtueTutorialOverlay(
-                title: 'Make Your Move',
-                message: 'The board is yours. Tap a piece to move it, just like normal chess.',
+                title: 'Move Phase',
+                message: 'Every turn starts with the Move Phase. Tap any of your pieces to preview valid moves and advance across the haunted board.',
+                stepText: 'STEP 3 OF 5',
                 isLeftAligned: true,
                 showBarrier: false,
                 onDismiss: () {
                   ref.read(tutorialControllerProvider.notifier).completeStep(TutorialStep.firstMove);
+                },
+                onSkip: () {
+                  ref.read(tutorialControllerProvider.notifier).skipTutorial();
                 },
               ),
             ),
@@ -701,12 +746,33 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
           if (tutorialStep == TutorialStep.spellIntro)
             Positioned.fill(
               child: FtueTutorialOverlay(
-                title: 'The Arcane Arts',
-                message: 'You have generated Mana. Tap a Spell card below to cast it and turn the tide!',
+                title: 'Spell Phase & Mana',
+                message: 'You generate Mana each turn! Tap any Spell in your scroll bar below to destroy enemies, freeze ranks, or heal your Commander.',
+                stepText: 'STEP 4 OF 5',
                 isLeftAligned: false,
                 showBarrier: false,
                 onDismiss: () {
                   ref.read(tutorialControllerProvider.notifier).completeStep(TutorialStep.spellIntro);
+                },
+                onSkip: () {
+                  ref.read(tutorialControllerProvider.notifier).skipTutorial();
+                },
+              ),
+            ),
+
+          if (tutorialStep == TutorialStep.relicIntro)
+            Positioned.fill(
+              child: FtueTutorialOverlay(
+                title: 'Relics & Turn End',
+                message: 'Tap the Relic Bag button (top-right of your tray) to equip artifacts onto pieces. When ready, press "END TURN" to pass the initiative!',
+                stepText: 'STEP 5 OF 5',
+                isLeftAligned: false,
+                showBarrier: false,
+                onDismiss: () {
+                  ref.read(tutorialControllerProvider.notifier).completeStep(TutorialStep.relicIntro);
+                },
+                onSkip: () {
+                  ref.read(tutorialControllerProvider.notifier).skipTutorial();
                 },
               ),
             ),

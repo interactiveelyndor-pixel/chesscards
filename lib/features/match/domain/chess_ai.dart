@@ -47,7 +47,7 @@ class ChessAi {
       if (validTargets.isEmpty) continue;
 
       if (spell.id == 'spell_fireball' || spell.id == 'spell_lightning') {
-        // Destroy the highest value white piece
+        // Destroy the highest value enemy piece (Rook > Bishop/Knight > Pawn)
         BoardPosition? bestTarget;
         int maxVal = -1;
         for (final pos in validTargets) {
@@ -63,8 +63,87 @@ class ChessAi {
         if (bestTarget != null) {
           return AiSpellAction(spell: spell, primary: bestTarget);
         }
-      } else if (spell.id == 'spell_freeze' || spell.id == 'spell_soul_leech') {
-        return AiSpellAction(spell: spell, primary: validTargets.first);
+      } else if (spell.id == 'spell_blizzard') {
+        // Find center tile that freezes the most enemy piece value
+        BoardPosition? bestTarget;
+        int maxFrozenValue = 0;
+        for (final pos in validTargets) {
+          int areaValue = 0;
+          for (int dr = -1; dr <= 1; dr++) {
+            for (int dc = -1; dc <= 1; dc++) {
+              final checkPos = pos.offset(dr, dc);
+              if (checkPos.isValid) {
+                final p = board.pieceAt(checkPos);
+                if (p != null && p.color != aiColor && !p.isFrozen) {
+                  areaValue += _pieceValue(p.type);
+                }
+              }
+            }
+          }
+          if (areaValue > maxFrozenValue) {
+            maxFrozenValue = areaValue;
+            bestTarget = pos;
+          }
+        }
+        if (bestTarget != null && maxFrozenValue > 0) {
+          return AiSpellAction(spell: spell, primary: bestTarget);
+        }
+      } else if (spell.id == 'spell_freeze') {
+        // Freeze the highest value unfrozen enemy piece
+        BoardPosition? bestTarget;
+        int maxVal = -1;
+        for (final pos in validTargets) {
+          final p = board.pieceAt(pos);
+          if (p != null && !p.isFrozen) {
+            final val = _pieceValue(p.type);
+            if (val > maxVal) {
+              maxVal = val;
+              bestTarget = pos;
+            }
+          }
+        }
+        if (bestTarget != null) {
+          return AiSpellAction(spell: spell, primary: bestTarget);
+        }
+      } else if (spell.id == 'spell_soul_leech') {
+        // Leech highest value enemy piece
+        BoardPosition? bestTarget;
+        int maxVal = -1;
+        for (final pos in validTargets) {
+          final p = board.pieceAt(pos);
+          if (p != null) {
+            final val = _pieceValue(p.type);
+            if (val > maxVal) {
+              maxVal = val;
+              bestTarget = pos;
+            }
+          }
+        }
+        return AiSpellAction(spell: spell, primary: bestTarget ?? validTargets.first);
+      } else if (spell.id == 'spell_necromancy') {
+        // Revive a piece on a valid empty square closest to enemy or in active rank
+        BoardPosition? bestTarget;
+        int bestRank = -1;
+        for (final pos in validTargets) {
+          final rank = aiColor == PieceColor.black ? pos.row : 7 - pos.row;
+          if (rank > bestRank) {
+            bestRank = rank;
+            bestTarget = pos;
+          }
+        }
+        if (bestTarget != null) {
+          return AiSpellAction(spell: spell, primary: bestTarget);
+        }
+      } else if (spell.id == 'spell_wall_of_stone') {
+        // Place stone barrier in the middle ranks (rows 3 or 4) to control center
+        BoardPosition? bestTarget;
+        for (final pos in validTargets) {
+          if (pos.row == 3 || pos.row == 4) {
+            bestTarget = pos;
+            break;
+          }
+        }
+        return AiSpellAction(spell: spell, primary: bestTarget ?? validTargets.first);
       }
     }
     return null;
@@ -144,8 +223,28 @@ class ChessAi {
     for (final pos in positions) {
       moves.addAll(ChessEngine.generateLegalMoves(state, pos));
     }
-    // Captures first for better pruning
-    moves.sort((a, b) => (b.isCapture ? 1 : 0) - (a.isCapture ? 1 : 0));
+    // MVV-LVA: Most Valuable Victim, Least Valuable Attacker for optimal minimax alpha-beta cutoffs
+    moves.sort((a, b) {
+      int scoreA = 0;
+      int scoreB = 0;
+      if (a.isCapture && a.capturedPiece != null) {
+        final attacker = state.board.pieceAt(a.from);
+        final victimVal = _pieceValue(a.capturedPiece!.type);
+        final attackerVal = attacker != null ? _pieceValue(attacker.type) : 0;
+        scoreA = victimVal * 10 - attackerVal;
+      } else if (a.isCapture) {
+        scoreA = 100;
+      }
+      if (b.isCapture && b.capturedPiece != null) {
+        final attacker = state.board.pieceAt(b.from);
+        final victimVal = _pieceValue(b.capturedPiece!.type);
+        final attackerVal = attacker != null ? _pieceValue(attacker.type) : 0;
+        scoreB = victimVal * 10 - attackerVal;
+      } else if (b.isCapture) {
+        scoreB = 100;
+      }
+      return scoreB.compareTo(scoreA);
+    });
     return moves;
   }
 

@@ -6,6 +6,7 @@ import '../../../../theme/app_colors.dart';
 import '../../../../core/audio/audio_service.dart';
 import '../../../../core/audio/audio_enums.dart';
 import '../../../../core/services/settings_service.dart';
+import '../../../menu/presentation/widgets/how_to_play_modal.dart';
 
 class PauseMenuOverlay extends ConsumerStatefulWidget {
   final VoidCallback onResume;
@@ -22,8 +23,6 @@ class PauseMenuOverlay extends ConsumerStatefulWidget {
 }
 
 class _PauseMenuOverlayState extends ConsumerState<PauseMenuOverlay> {
-  bool _showSpellGuide = false;
-
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsServiceProvider);
@@ -52,7 +51,7 @@ class _PauseMenuOverlayState extends ConsumerState<PauseMenuOverlay> {
               ),
             ],
           ),
-          child: _showSpellGuide ? _buildSpellGuide() : _buildMainPauseMenu(settings, audio),
+          child: _buildMainPauseMenu(settings, audio),
         ),
       ),
     );
@@ -187,11 +186,11 @@ class _PauseMenuOverlayState extends ConsumerState<PauseMenuOverlay> {
         const SizedBox(height: 10),
 
         _MenuButton(
-          label: 'SPELL & RULES GUIDE',
+          label: 'HOW TO PLAY & RULES',
           icon: Icons.menu_book,
           color: const Color(0xFF2A1C38),
           textColor: AppColors.runeGold,
-          onTap: () => setState(() => _showSpellGuide = true),
+          onTap: () => HowToPlayModal.show(context),
         ),
 
         const SizedBox(height: 10),
@@ -218,79 +217,6 @@ class _PauseMenuOverlayState extends ConsumerState<PauseMenuOverlay> {
             audio.stopBgm();
             context.go('/menu');
           },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSpellGuide() {
-    final spells = [
-      {'name': 'Fireball', 'cost': '7 Mana', 'desc': 'Destroys any non-King piece within range.'},
-      {'name': 'Frost Bind', 'cost': '2 Mana', 'desc': 'Freezes an enemy piece for 1 turn.'},
-      {'name': 'Blizzard', 'cost': '5 Mana', 'desc': 'Freezes a 3x3 area for 2 turns.'},
-      {'name': 'Soul Leech', 'cost': '4 Mana', 'desc': 'Deals 25 direct damage & restores 25 HP.'},
-      {'name': 'Wall of Stone', 'cost': '3 Mana', 'desc': 'Erects an impassable stone barrier.'},
-      {'name': 'Necromancy', 'cost': '6 Mana', 'desc': 'Revives a captured pawn back to the board.'},
-    ];
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          'SPELLBOOK GRIMOIRE',
-          style: GoogleFonts.cinzel(
-            color: AppColors.runeGold,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 240,
-          child: ListView.separated(
-            itemCount: spells.length,
-            separatorBuilder: (_, __) => const Divider(color: Colors.white12),
-            itemBuilder: (context, i) {
-              final sp = spells[i];
-              return ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      sp['name']!,
-                      style: GoogleFonts.cinzel(
-                        color: AppColors.runeGold,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                    Text(
-                      sp['cost']!,
-                      style: const TextStyle(
-                        color: AppColors.ghostBlue,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                subtitle: Text(
-                  sp['desc']!,
-                  style: const TextStyle(color: Colors.white70, fontSize: 11),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 12),
-        _MenuButton(
-          label: 'BACK TO PAUSE MENU',
-          icon: Icons.arrow_back,
-          color: AppColors.runeGold,
-          textColor: Colors.black,
-          onTap: () => setState(() => _showSpellGuide = false),
         ),
       ],
     );

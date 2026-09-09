@@ -6,8 +6,10 @@ enum TutorialStep {
   modeSelect,
   difficultySelect,
   matchIntro,
+  combatRules,
   firstMove,
   spellIntro,
+  relicIntro,
   completed
 }
 
