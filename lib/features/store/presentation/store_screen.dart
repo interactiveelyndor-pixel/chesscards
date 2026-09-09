@@ -7,7 +7,9 @@ import '../../../../theme/app_colors.dart';
 import '../application/store_controller.dart';
 import '../domain/store_item.dart';
 import '../domain/store_inventory.dart';
+import '../domain/store_state.dart';
 import '../../../../shared/widgets/gothic_background.dart';
+import '../../../../core/services/ad_manager.dart';
 
 class StoreScreen extends ConsumerStatefulWidget {
   const StoreScreen({super.key});
@@ -52,8 +54,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('CLAIMED: ${item.name}'),
-            backgroundColor: const Color(0xFF6A040F),
+            content: Text('PURCHASED: ${item.name}'),
+            backgroundColor: const Color(0xFFFF7200),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
           ),
@@ -87,7 +89,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF140700).withOpacity(0.95),
+        backgroundColor: const Color(0xFF140700).withValues(alpha: 0.95),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: const BorderSide(color: Color(0xFF6B2700), width: 2),
@@ -143,6 +145,111 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                 style: GoogleFonts.cinzel(color: const Color(0xFFFFF3E0), fontWeight: FontWeight.bold),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDailyFountainBanner(StoreState storeState) {
+    final claimsLeft = (3 - storeState.dailyAdSoulsClaimed).clamp(0, 3);
+    final canClaim = claimsLeft > 0;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: canClaim
+              ? [const Color(0xFF220901), const Color(0xFF4A1A00)]
+              : [const Color(0xFF1A1A1A), const Color(0xFF101010)],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: canClaim ? AppColors.runeGold : AppColors.fogGray.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+        boxShadow: canClaim
+            ? [
+                BoxShadow(
+                  color: AppColors.runeGold.withValues(alpha: 0.15),
+                  blurRadius: 16,
+                  spreadRadius: 2,
+                ),
+              ]
+            : [],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: canClaim ? const Color(0xFFDC2F02).withValues(alpha: 0.2) : Colors.black26,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.diamond_outlined, color: AppColors.runeGold, size: 28),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'SOUL WELL: DAILY FOUNTAIN',
+                  style: GoogleFonts.cinzel(
+                    color: AppColors.runeGold,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  canClaim
+                      ? 'Watch an offering video to draw +50 Souls ($claimsLeft/3 remaining today)'
+                      : 'Soul Well depleted for today. Returns tomorrow at midnight.',
+                  style: GoogleFonts.raleway(
+                    color: AppColors.candleIvory.withValues(alpha: 0.8),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: canClaim ? AppColors.runeGold : Colors.white10,
+              foregroundColor: canClaim ? Colors.black : Colors.white38,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: canClaim
+                ? () async {
+                    await AdManager.instance.showRewardedAd(
+                      onRewarded: () async {
+                        final success = await ref.read(storeControllerProvider.notifier).claimDailyAdSouls();
+                        if (success && mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: AppColors.voidPanel,
+                              content: Text(
+                                '+50 Souls drawn from the Soul Well!',
+                                style: GoogleFonts.cinzel(color: AppColors.runeGold, fontWeight: FontWeight.bold),
+                              ),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  }
+                : null,
+            icon: Icon(canClaim ? Icons.video_collection_rounded : Icons.check, size: 16),
+            label: Text(
+              canClaim ? '+50 SOULS' : 'CLAIMED',
+              style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
+          ),
         ],
       ),
     );
@@ -263,51 +370,58 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(24.0),
-                        child: activeItems.isEmpty
-                            ? Center(
-                                child: Text(
-                                  'THE SHELVES ARE BARE...',
-                                  style: GoogleFonts.cinzel(
-                                    color: const Color(0xFF8B4500),
-                                    fontSize: 16,
-                                    letterSpacing: 2.0,
-                                  ),
-                                ),
-                              )
-                            : GridView.builder(
-                                physics: const BouncingScrollPhysics(),
-                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: MediaQuery.of(context).size.width > 800 ? 4 : (MediaQuery.of(context).size.width > 500 ? 3 : 2),
-                                  crossAxisSpacing: 20,
-                                  mainAxisSpacing: 20,
-                                  childAspectRatio: 0.7,
-                                ),
-                                itemCount: activeItems.length,
-                                itemBuilder: (context, index) {
-                                  final item = activeItems[index];
-                                  final isOwned = storeState.ownedItemIds.contains(item.id);
-                                  final isEquipped = storeState.equippedDollId == item.id || storeState.equippedBoardId == item.id;
-                                  final canAffordWithGold = item.goldCost != null && storeState.goldCoins >= item.goldCost!;
-                                  final canAffordWithSouls = item.soulCost != null && storeState.soulFragments >= item.soulCost!;
-                                  final canAfford = canAffordWithGold || canAffordWithSouls;
+                        child: Column(
+                          children: [
+                            _buildDailyFountainBanner(storeState),
+                            Expanded(
+                              child: activeItems.isEmpty
+                                  ? Center(
+                                      child: Text(
+                                        'THE SHELVES ARE BARE...',
+                                        style: GoogleFonts.cinzel(
+                                          color: const Color(0xFF8B4500),
+                                          fontSize: 16,
+                                          letterSpacing: 2.0,
+                                        ),
+                                      ),
+                                    )
+                                  : GridView.builder(
+                                      physics: const BouncingScrollPhysics(),
+                                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: MediaQuery.of(context).size.width > 800 ? 4 : (MediaQuery.of(context).size.width > 500 ? 3 : 2),
+                                        crossAxisSpacing: 20,
+                                        mainAxisSpacing: 20,
+                                        childAspectRatio: 0.7,
+                                      ),
+                                      itemCount: activeItems.length,
+                                      itemBuilder: (context, index) {
+                                        final item = activeItems[index];
+                                        final isOwned = storeState.ownedItemIds.contains(item.id);
+                                        final isEquipped = storeState.equippedDollId == item.id || storeState.equippedBoardId == item.id;
+                                        final canAffordWithGold = item.goldCost != null && storeState.goldCoins >= item.goldCost!;
+                                        final canAffordWithSouls = item.soulCost != null && storeState.soulFragments >= item.soulCost!;
+                                        final canAfford = canAffordWithGold || canAffordWithSouls;
 
-                                  return _StoreItemCard(
-                                    item: item,
-                                    isOwned: isOwned,
-                                    isEquipped: isEquipped,
-                                    canAfford: canAfford,
-                                    onTap: () {
-                                      if (isOwned && item.type != StoreItemType.currency && item.type != StoreItemType.cardPack) {
-                                        if (!isEquipped) {
-                                          _handleEquip(item);
-                                        }
-                                        return;
-                                      }
-                                      _showPurchaseDialog(item);
-                                    },
-                                  ).animate().fadeIn(delay: Duration(milliseconds: 50 * index)).slideY(begin: 0.1);
-                                },
-                              ),
+                                        return _StoreItemCard(
+                                          item: item,
+                                          isOwned: isOwned,
+                                          isEquipped: isEquipped,
+                                          canAfford: canAfford,
+                                          onTap: () {
+                                            if (isOwned && item.type != StoreItemType.currency && item.type != StoreItemType.cardPack) {
+                                              if (!isEquipped) {
+                                                _handleEquip(item);
+                                              }
+                                              return;
+                                            }
+                                            _showPurchaseDialog(item);
+                                          },
+                                        ).animate().fadeIn(delay: Duration(milliseconds: 50 * index)).slideY(begin: 0.1);
+                                      },
+                                    ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],

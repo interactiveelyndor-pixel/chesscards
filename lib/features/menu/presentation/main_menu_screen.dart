@@ -486,24 +486,7 @@ class _BottomNav extends StatelessWidget {
               _NavItem(
                 icon: Icons.storefront_rounded,
                 label: 'STORE',
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'COMING SOON',
-                        style: GoogleFonts.cinzel(color: const Color(0xFFFFBA08), fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                      backgroundColor: const Color(0xFF140700),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        side: const BorderSide(color: Color(0xFF9D0208)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
+                onTap: () => context.push('/store'),
               ),
             ],
           ),

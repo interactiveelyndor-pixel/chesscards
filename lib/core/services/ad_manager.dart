@@ -24,10 +24,16 @@ class AdManager {
   bool _isInterstitialReady = false;
   bool _isRewardedReady = false;
   bool simulationMode = false;
+  DateTime? _lastRewardedAdWatchedTime;
 
   bool get isInitialized => _isInitialized;
   bool get isInterstitialReady => _isInterstitialReady;
   bool get isRewardedReady => _isRewardedReady;
+
+  /// Returns true if the user watched an opt-in Rewarded Ad within the last 180 seconds.
+  bool get hasWatchedRewardedAdRecently =>
+      _lastRewardedAdWatchedTime != null &&
+      DateTime.now().difference(_lastRewardedAdWatchedTime!).inSeconds < 180;
 
   bool get _isSupportedPlatform =>
       !kIsWeb &&
@@ -102,8 +108,14 @@ class AdManager {
   }
 
   /// Shows the interstitial ad if ready. Call this exclusively on game-over states.
+  /// Automatically suppressed if the player watched a Rewarded Ad recently to prevent ad fatigue.
   Future<bool> showGameOverInterstitial({String placementId = interstitialPlacementId}) async {
     if (!_isSupportedPlatform) return false;
+
+    if (hasWatchedRewardedAdRecently) {
+      debugPrint('Smart Ad Pacing: Skipping Game-Over Interstitial (Rewarded Ad watched recently).');
+      return false;
+    }
 
     try {
       debugPrint('Showing Game-Over Unity Interstitial Ad: $placementId');
@@ -142,6 +154,7 @@ class AdManager {
   }) async {
     if (simulationMode || !_isSupportedPlatform) {
       // In development/test/unsupported platforms, grant reward directly for simulation
+      _lastRewardedAdWatchedTime = DateTime.now();
       onRewarded();
       return true;
     }
@@ -159,6 +172,7 @@ class AdManager {
         },
         onComplete: (id) {
           _isRewardedReady = false;
+          _lastRewardedAdWatchedTime = DateTime.now();
           debugPrint('Unity Rewarded Video Completed! Granting player reward: $id');
           onRewarded();
           loadRewardedAd();

@@ -19,6 +19,8 @@ class StoreController extends StateNotifier<StoreState> {
   static const String _ownedKey = 'store_owned_items';
   static const String _equippedDollKey = 'store_equipped_doll';
   static const String _equippedBoardKey = 'store_equipped_board';
+  static const String _dailyAdSoulsKey = 'store_daily_ad_souls_count';
+  static const String _dailyAdSoulsDateKey = 'store_daily_ad_souls_date';
 
   bool _isInitialized = false;
 
@@ -35,7 +37,12 @@ class StoreController extends StateNotifier<StoreState> {
     final equippedDoll = prefs.getString(_equippedDollKey) ?? state.equippedDollId;
     final equippedBoard = prefs.getString(_equippedBoardKey) ?? state.equippedBoardId;
 
+    final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+    final savedDate = prefs.getString(_dailyAdSoulsDateKey);
+    final int dailyAdClaims = (savedDate == todayStr) ? (prefs.getInt(_dailyAdSoulsKey) ?? 0) : 0;
+
     _isInitialized = true;
+    if (!mounted) return;
     state = StoreState(
       playerLevel: level,
       playerXp: xp,
@@ -44,6 +51,7 @@ class StoreController extends StateNotifier<StoreState> {
       ownedItemIds: owned,
       equippedDollId: equippedDoll,
       equippedBoardId: equippedBoard,
+      dailyAdSoulsClaimed: dailyAdClaims,
       isLoading: false,
     );
   }
@@ -56,12 +64,27 @@ class StoreController extends StateNotifier<StoreState> {
     await prefs.setInt(_soulsKey, curState.soulFragments);
     await prefs.setInt(_goldKey, curState.goldCoins);
     await prefs.setStringList(_ownedKey, curState.ownedItemIds);
+    await prefs.setInt(_dailyAdSoulsKey, curState.dailyAdSoulsClaimed);
+    final todayStr = DateTime.now().toIso8601String().substring(0, 10);
+    await prefs.setString(_dailyAdSoulsDateKey, todayStr);
+
     if (curState.equippedDollId != null) {
       await prefs.setString(_equippedDollKey, curState.equippedDollId!);
     }
     if (curState.equippedBoardId != null) {
       await prefs.setString(_equippedBoardKey, curState.equippedBoardId!);
     }
+  }
+
+  Future<bool> claimDailyAdSouls({int amount = 50}) async {
+    if (state.dailyAdSoulsClaimed >= 3) return false;
+
+    state = state.copyWith(
+      soulFragments: state.soulFragments + amount,
+      dailyAdSoulsClaimed: state.dailyAdSoulsClaimed + 1,
+    );
+    await _saveData();
+    return true;
   }
 
   bool canAfford(StoreItem item, bool useSouls) {

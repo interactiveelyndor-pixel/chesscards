@@ -136,10 +136,14 @@ class MatchController extends StateNotifier<MatchState> {
     });
   }
 
+  bool _hasUsedEmergencyRevive = false;
+  bool get hasUsedEmergencyRevive => _hasUsedEmergencyRevive;
+
   void startAiMatch({AiDifficulty difficulty = AiDifficulty.haunted}) {
     _ref.read(networkServiceProvider).leaveMatch();
     _ref.read(playerDollProvider.notifier).reset();
     _ref.read(opponentDollProvider.notifier).reset();
+    _hasUsedEmergencyRevive = false;
     _aiThinking = false;
     state = MatchState.initial().copyWith(
       isAiMode: true,
@@ -799,6 +803,24 @@ class MatchController extends StateNotifier<MatchState> {
       hintMove: bestMove,
       selectedTile: bestMove.from,
       highlightedMoves: {bestMove.from, bestMove.to},
+    );
+  }
+
+  /// Triggers a Rewarded Video Ad to Revive Commander Doll (+30 HP) upon lethal damage (PvE only, 1 use per match).
+  Future<void> claimEmergencyRevive() async {
+    if (state.isOnlineMode || _hasUsedEmergencyRevive) return;
+    await AdManager.instance.showRewardedAd(
+      onRewarded: () {
+        _hasUsedEmergencyRevive = true;
+        _ref.read(playerDollProvider.notifier).heal(30);
+        _logAction('DEATH DEFIED! Soul Doll revived with +30 HP!', PieceColor.white, important: true);
+        if (state.result != null) {
+          state = state.copyWith(
+            clearResult: true,
+            gameState: state.gameState.copyWith(status: GameStatus.ongoing),
+          );
+        }
+      },
     );
   }
 }

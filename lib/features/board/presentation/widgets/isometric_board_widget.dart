@@ -10,7 +10,6 @@ import '../../../match/domain/game_state.dart';
 import '../../../match/domain/chess_move.dart';
 import '../../../spells/domain/spell.dart';
 import '../../domain/board_position.dart';
-import 'teleport_portal_effect.dart';
 
 class IsometricBoardWidget extends StatefulWidget {
   final GameState? gameState;

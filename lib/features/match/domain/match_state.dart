@@ -135,6 +135,7 @@ class MatchState {
     bool clearSelectedTile = false,
     bool clearPendingPromotion = false,
     bool clearHint = false,
+    bool clearResult = false,
   }) {
     return MatchState(
       gameState: gameState ?? this.gameState,
@@ -154,7 +155,7 @@ class MatchState {
       isOnlineMode: isOnlineMode ?? this.isOnlineMode,
       onlineColor: onlineColor ?? this.onlineColor,
       aiDifficulty: aiDifficulty ?? this.aiDifficulty,
-      result: result ?? this.result,
+      result: clearResult ? null : (result ?? this.result),
       highlightedMoves: highlightedMoves ?? this.highlightedMoves,
       selectedTile: clearSelectedTile ? null : (selectedTile ?? this.selectedTile),
       matchStartTime: matchStartTime ?? this.matchStartTime,

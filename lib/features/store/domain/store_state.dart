@@ -6,6 +6,7 @@ class StoreState {
   final List<String> ownedItemIds;
   final String? equippedDollId;
   final String? equippedBoardId;
+  final int dailyAdSoulsClaimed;
   final bool isLoading;
 
   const StoreState({
@@ -16,6 +17,7 @@ class StoreState {
     required this.ownedItemIds,
     this.equippedDollId,
     this.equippedBoardId,
+    this.dailyAdSoulsClaimed = 0,
     this.isLoading = false,
   });
 
@@ -26,6 +28,7 @@ class StoreState {
       soulFragments: 5000, // Initial test balance
       goldCoins: 1000,     // Initial test balance
       ownedItemIds: [],
+      dailyAdSoulsClaimed: 0,
     );
   }
 
@@ -37,6 +40,7 @@ class StoreState {
     List<String>? ownedItemIds,
     String? equippedDollId,
     String? equippedBoardId,
+    int? dailyAdSoulsClaimed,
     bool? isLoading,
   }) {
     return StoreState(
@@ -47,6 +51,7 @@ class StoreState {
       ownedItemIds: ownedItemIds ?? this.ownedItemIds,
       equippedDollId: equippedDollId ?? this.equippedDollId,
       equippedBoardId: equippedBoardId ?? this.equippedBoardId,
+      dailyAdSoulsClaimed: dailyAdSoulsClaimed ?? this.dailyAdSoulsClaimed,
       isLoading: isLoading ?? this.isLoading,
     );
   }

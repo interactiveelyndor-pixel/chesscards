@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../theme/app_colors.dart';
 import '../../../../shared/enums/piece_color.dart';
 import '../../domain/match_result.dart';
+import '../../../../core/services/ad_manager.dart';
+import '../../../../core/audio/audio_service.dart';
+import '../../../../core/audio/audio_enums.dart';
+import '../../../store/application/store_controller.dart';
 
-class MatchSummaryOverlay extends StatelessWidget {
+class MatchSummaryOverlay extends ConsumerStatefulWidget {
   final MatchResult result;
   final int playerCaptures;
   final int opponentCaptures;
@@ -28,16 +33,61 @@ class MatchSummaryOverlay extends StatelessWidget {
   });
 
   @override
+  ConsumerState<MatchSummaryOverlay> createState() => _MatchSummaryOverlayState();
+}
+
+class _MatchSummaryOverlayState extends ConsumerState<MatchSummaryOverlay> {
+  bool _hasDoubledSouls = false;
+  bool _isLoadingAd = false;
+
+  void _onDoubleSoulsTapped() async {
+    if (_hasDoubledSouls || _isLoadingAd || widget.earnedSouls <= 0) return;
+
+    setState(() => _isLoadingAd = true);
+    await AdManager.instance.showRewardedAd(
+      onRewarded: () {
+        ref.read(storeControllerProvider.notifier).addCurrency(souls: widget.earnedSouls);
+        ref.read(audioServiceProvider).playSfx(SfxType.cardPlay);
+        if (mounted) {
+          setState(() {
+            _hasDoubledSouls = true;
+            _isLoadingAd = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: AppColors.voidPanel,
+              content: Row(
+                children: [
+                  const Icon(Icons.auto_awesome, color: AppColors.runeGold),
+                  const SizedBox(width: 8),
+                  Text(
+                    '+${widget.earnedSouls} Extra Souls claimed!',
+                    style: GoogleFonts.cinzel(color: AppColors.runeGold, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      },
+    );
+    if (mounted) setState(() => _isLoadingAd = false);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isWinner = result.winner == PieceColor.white;
+    final isWinner = widget.result.winner == PieceColor.white;
     final titleText = isWinner ? 'VICTORY' : 'DEFEATED';
     final titleColor = isWinner ? AppColors.runeGold : AppColors.bloodWine;
     final subtitle = isWinner ? 'The spirits bow before you.' : 'The darkness claims you.';
 
-    final duration = result.matchDuration;
+    final duration = widget.result.matchDuration;
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
     final timeStr = '${minutes}m ${seconds}s';
+
+    final displayedSouls = _hasDoubledSouls ? widget.earnedSouls * 2 : widget.earnedSouls;
 
     return Material(
       color: Colors.transparent,
@@ -87,12 +137,12 @@ class MatchSummaryOverlay extends StatelessWidget {
                 ),
               ).animate().fadeIn(delay: 400.ms, duration: 800.ms),
 
-              const SizedBox(height: 48),
+              const SizedBox(height: 32),
 
               // ── Stats Card ────────────────────────────────────────────
               Container(
                 width: 340,
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
                   color: AppColors.voidPanel.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(16),
@@ -113,51 +163,107 @@ class MatchSummaryOverlay extends StatelessWidget {
                     _StatRow(
                       icon: Icons.sports_kabaddi,
                       label: 'Pieces Captured',
-                      value: '$playerCaptures',
+                      value: '${widget.playerCaptures}',
                       color: AppColors.runeGold,
                     ),
-                    const Divider(color: Colors.white12, height: 20),
+                    const Divider(color: Colors.white12, height: 18),
                     _StatRow(
                       icon: Icons.favorite,
                       label: 'Total Healed',
-                      value: '+$playerHealTotal HP',
+                      value: '+${widget.playerHealTotal} HP',
                       color: AppColors.spectralGreen,
                     ),
-                    const Divider(color: Colors.white12, height: 20),
+                    const Divider(color: Colors.white12, height: 18),
                     _StatRow(
                       icon: Icons.swap_horiz,
                       label: 'Total Turns',
-                      value: '$totalTurns',
+                      value: '${widget.totalTurns}',
                       color: AppColors.ghostBlue,
                     ),
-                    const Divider(color: Colors.white12, height: 20),
+                    const Divider(color: Colors.white12, height: 18),
                     _StatRow(
                       icon: Icons.timer_outlined,
                       label: 'Match Duration',
                       value: timeStr,
                       color: AppColors.fogGray,
                     ),
-                    const Divider(color: Colors.white12, height: 20),
+                    const Divider(color: Colors.white12, height: 18),
                     _StatRow(
                       icon: Icons.diamond_outlined,
                       label: 'Souls Earned',
-                      value: '+$earnedSouls',
-                      color: AppColors.soulFlame,
+                      value: _hasDoubledSouls ? '+$displayedSouls (DOUBLED!)' : '+$displayedSouls',
+                      color: _hasDoubledSouls ? AppColors.runeGold : AppColors.soulFlame,
                     ),
-                    const Divider(color: Colors.white12, height: 20),
+                    const Divider(color: Colors.white12, height: 18),
                     _StatRow(
                       icon: Icons.star_border,
                       label: 'XP Earned',
-                      value: '+${result.earnedXp} XP',
+                      value: '+${widget.result.earnedXp} XP',
                       color: Colors.blueAccent,
                     ),
                   ],
                 ),
               ).animate().fadeIn(delay: 600.ms, duration: 600.ms).slideY(begin: 0.2, end: 0),
 
-              const SizedBox(height: 48),
+              const SizedBox(height: 24),
 
-              // ── Buttons ───────────────────────────────────────────────
+              // ── Optional Double Souls Rewarded Button ────────────────────
+              if (isWinner && widget.earnedSouls > 0)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: InkWell(
+                    onTap: _hasDoubledSouls ? null : _onDoubleSoulsTapped,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: _hasDoubledSouls
+                              ? [const Color(0xFF2A2A2A), const Color(0xFF1A1A1A)]
+                              : [const Color(0xFFFFB703), const Color(0xFFE85D04), const Color(0xFF7A0C16)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _hasDoubledSouls ? Colors.white24 : AppColors.runeGold,
+                          width: 1.5,
+                        ),
+                        boxShadow: _hasDoubledSouls
+                            ? []
+                            : [
+                                BoxShadow(
+                                  color: AppColors.runeGold.withValues(alpha: 0.4),
+                                  blurRadius: 16,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _hasDoubledSouls ? Icons.check_circle : Icons.video_collection_rounded,
+                            color: _hasDoubledSouls ? AppColors.spectralGreen : Colors.white,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            _hasDoubledSouls
+                                ? 'SOULS DOUBLED (+$displayedSouls)'
+                                : 'DOUBLE SOULS (+${widget.earnedSouls * 2})',
+                            style: GoogleFonts.cinzel(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ).animate().fadeIn(delay: 750.ms, duration: 600.ms).scaleXY(begin: 0.9, end: 1.0),
+
+              // ── Rematch & Main Menu Action Buttons ───────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -165,14 +271,14 @@ class MatchSummaryOverlay extends StatelessWidget {
                     label: 'REMATCH',
                     icon: Icons.replay,
                     color: titleColor,
-                    onTap: onRematch,
+                    onTap: widget.onRematch,
                   ),
                   const SizedBox(width: 16),
                   _SummaryButton(
                     label: 'MAIN MENU',
                     icon: Icons.home_outlined,
                     color: AppColors.fogGray,
-                    onTap: onExit,
+                    onTap: widget.onExit,
                   ),
                 ],
               ).animate().fadeIn(delay: 900.ms, duration: 600.ms),
