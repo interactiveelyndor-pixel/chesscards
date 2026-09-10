@@ -7,6 +7,7 @@ class StoreState {
   final String? equippedDollId;
   final String? equippedBoardId;
   final int dailyAdSoulsClaimed;
+  final int dailyAdGoldClaimed;
   final bool isLoading;
 
   const StoreState({
@@ -16,8 +17,9 @@ class StoreState {
     required this.goldCoins,
     required this.ownedItemIds,
     this.equippedDollId,
-    this.equippedBoardId,
+    this.equippedBoardId = 'board_crimson_crypt',
     this.dailyAdSoulsClaimed = 0,
+    this.dailyAdGoldClaimed = 0,
     this.isLoading = false,
   });
 
@@ -25,10 +27,12 @@ class StoreState {
     return const StoreState(
       playerLevel: 1,
       playerXp: 0,
-      soulFragments: 5000, // Initial test balance
-      goldCoins: 1000,     // Initial test balance
-      ownedItemIds: [],
+      soulFragments: 1500, // Balanced initial balance
+      goldCoins: 2000,     // Balanced initial balance
+      ownedItemIds: ['board_crimson_crypt'],
+      equippedBoardId: 'board_crimson_crypt',
       dailyAdSoulsClaimed: 0,
+      dailyAdGoldClaimed: 0,
     );
   }
 
@@ -41,6 +45,7 @@ class StoreState {
     String? equippedDollId,
     String? equippedBoardId,
     int? dailyAdSoulsClaimed,
+    int? dailyAdGoldClaimed,
     bool? isLoading,
   }) {
     return StoreState(
@@ -52,6 +57,7 @@ class StoreState {
       equippedDollId: equippedDollId ?? this.equippedDollId,
       equippedBoardId: equippedBoardId ?? this.equippedBoardId,
       dailyAdSoulsClaimed: dailyAdSoulsClaimed ?? this.dailyAdSoulsClaimed,
+      dailyAdGoldClaimed: dailyAdGoldClaimed ?? this.dailyAdGoldClaimed,
       isLoading: isLoading ?? this.isLoading,
     );
   }

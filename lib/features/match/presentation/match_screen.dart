@@ -638,17 +638,6 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
               ),
             ),
 
-          if (_isPaused)
-            Positioned.fill(
-              child: PauseMenuOverlay(
-                onResume: () => setState(() => _isPaused = false),
-                onRestart: () {
-                  matchController.restart();
-                  setState(() => _isPaused = false);
-                },
-              ),
-            ),
-
           if (playerCritical || opponentCritical)
             Positioned.fill(
               child: IgnorePointer(
@@ -695,7 +684,12 @@ class _MatchScreenState extends ConsumerState<MatchScreen> {
                 totalTurns: matchState.turnNumber,
                 earnedSouls: matchState.result!.earnedSouls,
                 onRematch: matchController.restartMatch,
-                onExit: () => context.go('/menu'),
+                onExit: () {
+                  if (ref.read(matchControllerProvider).isOnlineMode) {
+                    ref.read(networkServiceProvider).leaveMatch();
+                  }
+                  context.go('/menu');
+                },
               ),
             ),
 

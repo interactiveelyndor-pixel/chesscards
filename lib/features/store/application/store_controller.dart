@@ -20,7 +20,8 @@ class StoreController extends StateNotifier<StoreState> {
   static const String _equippedDollKey = 'store_equipped_doll';
   static const String _equippedBoardKey = 'store_equipped_board';
   static const String _dailyAdSoulsKey = 'store_daily_ad_souls_count';
-  static const String _dailyAdSoulsDateKey = 'store_daily_ad_souls_date';
+  static const String _dailyAdGoldKey = 'store_daily_ad_gold_count';
+  static const String _dailyAdDateKey = 'store_daily_ad_date';
 
   bool _isInitialized = false;
 
@@ -33,13 +34,17 @@ class StoreController extends StateNotifier<StoreState> {
     final xp = prefs.getInt(_xpKey) ?? state.playerXp;
     final souls = prefs.getInt(_soulsKey) ?? state.soulFragments;
     final gold = prefs.getInt(_goldKey) ?? state.goldCoins;
-    final owned = prefs.getStringList(_ownedKey) ?? state.ownedItemIds;
+    var owned = prefs.getStringList(_ownedKey) ?? state.ownedItemIds;
+    if (!owned.contains('board_crimson_crypt')) {
+      owned = ['board_crimson_crypt', ...owned];
+    }
     final equippedDoll = prefs.getString(_equippedDollKey) ?? state.equippedDollId;
-    final equippedBoard = prefs.getString(_equippedBoardKey) ?? state.equippedBoardId;
+    final equippedBoard = prefs.getString(_equippedBoardKey) ?? state.equippedBoardId ?? 'board_crimson_crypt';
 
     final todayStr = DateTime.now().toIso8601String().substring(0, 10);
-    final savedDate = prefs.getString(_dailyAdSoulsDateKey);
-    final int dailyAdClaims = (savedDate == todayStr) ? (prefs.getInt(_dailyAdSoulsKey) ?? 0) : 0;
+    final savedDate = prefs.getString(_dailyAdDateKey);
+    final int dailyAdSoulClaims = (savedDate == todayStr) ? (prefs.getInt(_dailyAdSoulsKey) ?? 0) : 0;
+    final int dailyAdGoldClaims = (savedDate == todayStr) ? (prefs.getInt(_dailyAdGoldKey) ?? 0) : 0;
 
     _isInitialized = true;
     if (!mounted) return;
@@ -51,7 +56,8 @@ class StoreController extends StateNotifier<StoreState> {
       ownedItemIds: owned,
       equippedDollId: equippedDoll,
       equippedBoardId: equippedBoard,
-      dailyAdSoulsClaimed: dailyAdClaims,
+      dailyAdSoulsClaimed: dailyAdSoulClaims,
+      dailyAdGoldClaimed: dailyAdGoldClaims,
       isLoading: false,
     );
   }
@@ -65,8 +71,9 @@ class StoreController extends StateNotifier<StoreState> {
     await prefs.setInt(_goldKey, curState.goldCoins);
     await prefs.setStringList(_ownedKey, curState.ownedItemIds);
     await prefs.setInt(_dailyAdSoulsKey, curState.dailyAdSoulsClaimed);
+    await prefs.setInt(_dailyAdGoldKey, curState.dailyAdGoldClaimed);
     final todayStr = DateTime.now().toIso8601String().substring(0, 10);
-    await prefs.setString(_dailyAdSoulsDateKey, todayStr);
+    await prefs.setString(_dailyAdDateKey, todayStr);
 
     if (curState.equippedDollId != null) {
       await prefs.setString(_equippedDollKey, curState.equippedDollId!);
@@ -76,12 +83,23 @@ class StoreController extends StateNotifier<StoreState> {
     }
   }
 
-  Future<bool> claimDailyAdSouls({int amount = 50}) async {
+  Future<bool> claimDailyAdSouls({int amount = 100}) async {
     if (state.dailyAdSoulsClaimed >= 3) return false;
 
     state = state.copyWith(
       soulFragments: state.soulFragments + amount,
       dailyAdSoulsClaimed: state.dailyAdSoulsClaimed + 1,
+    );
+    await _saveData();
+    return true;
+  }
+
+  Future<bool> claimDailyAdGold({int amount = 300}) async {
+    if (state.dailyAdGoldClaimed >= 3) return false;
+
+    state = state.copyWith(
+      goldCoins: state.goldCoins + amount,
+      dailyAdGoldClaimed: state.dailyAdGoldClaimed + 1,
     );
     await _saveData();
     return true;
@@ -98,6 +116,7 @@ class StoreController extends StateNotifier<StoreState> {
   }
 
   bool isOwned(String itemId) {
+    if (itemId == 'board_crimson_crypt') return true;
     return state.ownedItemIds.contains(itemId);
   }
 
@@ -120,14 +139,16 @@ class StoreController extends StateNotifier<StoreState> {
     }
 
     // Apply currency pack effects
-    if (item.id == 'currency_gold_pack') {
+    if (item.id == 'currency_gold_pouch') {
       newGold += 500;
+    } else if (item.id == 'currency_gold_chest') {
+      newGold += 1500;
     } else if (item.id == 'currency_soul_shard') {
       newSouls += 100;
     }
 
     final newOwned = List<String>.from(state.ownedItemIds);
-    if (item.type == StoreItemType.doll || item.type == StoreItemType.boardTheme) {
+    if ((item.type == StoreItemType.doll || item.type == StoreItemType.boardTheme) && !newOwned.contains(item.id)) {
       newOwned.add(item.id);
     }
 

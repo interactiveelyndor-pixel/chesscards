@@ -67,153 +67,158 @@ class _LobbyScreenState extends ConsumerState<LobbyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.abyssBlack,
-      body: GothicBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        setState(() => _isSearching = false);
+        ref.read(networkServiceProvider).leaveMatch();
+        context.go('/menu');
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.abyssBlack,
+        body: GothicBackground(
+          child: SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
 
-              // --- Top App Bar Area ---
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFFCC7722)),
-                      onPressed: () {
-                        if (_isSearching) {
+                // --- Top App Bar Area ---
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFFCC7722)),
+                        onPressed: () {
+                          setState(() => _isSearching = false);
                           ref.read(networkServiceProvider).leaveMatch();
-                        }
-                        context.go('/menu');
-                      },
-                    ),
-                    Expanded(
-                      child: Text(
-                        _isSearching ? 'SUMMONING OPPONENT...' : 'MULTIPLAYER LOBBY',
-                        style: GoogleFonts.cinzelDecorative(
-                          color: const Color(0xFFFFB703),
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 3.0,
-                          shadows: const [
-                            Shadow(
-                              color: Colors.black,
-                              blurRadius: 12,
+                          context.go('/menu');
+                        },
+                      ),
+                      Expanded(
+                        child: Text(
+                          _isSearching ? 'SUMMONING OPPONENT...' : 'MULTIPLAYER LOBBY',
+                          style: GoogleFonts.cinzelDecorative(
+                            color: const Color(0xFFFFB703),
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 3.0,
+                            shadows: const [
+                              Shadow(
+                                color: Colors.black,
+                                blurRadius: 12,
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(width: 48), // Balance
+                    ],
+                  ),
+                ).animate(target: _isSearching ? 1 : 0).fadeIn(duration: 800.ms).slideY(begin: -0.2),
+
+                const SizedBox(height: 10),
+
+                // --- Sub-header ---
+                Text(
+                  _isSearching ? 'THE VOID IS LISTENING' : 'FIND A WORTHY ADVERSARY',
+                  style: GoogleFonts.cinzel(
+                    color: const Color(0xFFD48A42),
+                    fontSize: 11,
+                    letterSpacing: 6.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ).animate().fadeIn(delay: 300.ms, duration: 800.ms),
+
+                const SizedBox(height: 40),
+                const FlyingBats(height: 80),
+                const Spacer(),
+
+                // --- Search Indicator ---
+                if (_isSearching)
+                  Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(40),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFF9D0208).withOpacity(0.1),
+                          border: Border.all(
+                            color: const Color(0xFFDC2F02).withOpacity(0.5),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF9D0208).withOpacity(0.4),
+                              blurRadius: 50,
+                              spreadRadius: 20,
                             ),
                           ],
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(width: 48), // Balance
-                  ],
-                ),
-              ).animate(target: _isSearching ? 1 : 0).fadeIn(duration: 800.ms).slideY(begin: -0.2),
-
-              const SizedBox(height: 10),
-
-              // --- Sub-header ---
-              Text(
-                _isSearching ? 'THE VOID IS LISTENING' : 'FIND A WORTHY ADVERSARY',
-                style: GoogleFonts.cinzel(
-                  color: const Color(0xFFD48A42),
-                  fontSize: 11,
-                  letterSpacing: 6.0,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-              ).animate().fadeIn(delay: 300.ms, duration: 800.ms),
-
-              const SizedBox(height: 40),
-              const FlyingBats(height: 80),
-              const Spacer(),
-
-              // --- Search Indicator ---
-              if (_isSearching)
-                Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(40),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFF9D0208).withOpacity(0.1),
-                        border: Border.all(
-                          color: const Color(0xFFDC2F02).withOpacity(0.5),
-                          width: 2,
+                        child: const Icon(
+                          Icons.wifi_tethering_rounded,
+                          size: 60,
+                          color: Color(0xFFFFBA08),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF9D0208).withOpacity(0.4),
-                            blurRadius: 50,
-                            spreadRadius: 20,
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.wifi_tethering_rounded,
-                        size: 60,
-                        color: Color(0xFFFFBA08),
-                      ),
-                    )
-                    .animate(onPlay: (controller) => controller.repeat(reverse: true))
-                    .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), duration: 1500.ms)
-                    .shimmer(duration: 1500.ms, color: const Color(0xFFFF7200)),
-                    
-                    const SizedBox(height: 40),
-                    const CircularProgressIndicator(color: Color(0xFFE85D04))
-                        .animate()
-                        .fadeIn(delay: 500.ms),
-                  ],
-                ),
-
-              // --- Find Match Button ---
-              if (!_isSearching)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: GothicButton(
-                    label: 'SEARCH FOR MATCH',
-                    icon: Icons.wifi_rounded,
-                    isPrimary: true,
-                    glowColor: const Color(0xFFFF9E00),
-                    gradient: const LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Color(0xFFFF7200), Color(0xFF220901)],
-                    ),
-                    onTap: _startSearch,
-                    delay: 0,
+                      )
+                      .animate(onPlay: (controller) => controller.repeat(reverse: true))
+                      .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), duration: 1500.ms)
+                      .shimmer(duration: 1500.ms, color: const Color(0xFFFF7200)),
+                      
+                      const SizedBox(height: 40),
+                      const CircularProgressIndicator(color: Color(0xFFE85D04))
+                          .animate()
+                          .fadeIn(delay: 500.ms),
+                    ],
                   ),
-                ),
 
-              const Spacer(),
+                // --- Find Match Button ---
+                if (!_isSearching)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: GothicButton(
+                      label: 'SEARCH FOR MATCH',
+                      icon: Icons.wifi_rounded,
+                      isPrimary: true,
+                      glowColor: const Color(0xFFFF9E00),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xFFFF7200), Color(0xFF220901)],
+                      ),
+                      onTap: _startSearch,
+                      delay: 0,
+                    ),
+                  ),
 
-              // --- Back Button ---
-              Padding(
-                padding: const EdgeInsets.only(bottom: 30),
-                child: TextButton.icon(
-                  onPressed: () {
-                    if (_isSearching) {
+                const Spacer(),
+
+                // --- Back Button ---
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 30),
+                  child: TextButton.icon(
+                    onPressed: () {
                       setState(() => _isSearching = false);
                       ref.read(networkServiceProvider).leaveMatch();
-                    } else {
-                      context.pop();
-                    }
-                  },
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Color(0xFF8B4500)),
-                  label: Text(
-                    _isSearching ? 'CANCEL SEARCH' : 'BACK TO MENU',
-                    style: GoogleFonts.cinzel(
-                      color: const Color(0xFFCC7722),
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2.0,
+                      context.go('/menu');
+                    },
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Color(0xFF8B4500)),
+                    label: Text(
+                      'BACK TO MAIN MENU',
+                      style: GoogleFonts.cinzel(
+                        color: const Color(0xFFCC7722),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2.0,
+                      ),
                     ),
                   ),
                 ).animate().fadeIn(delay: 500.ms),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

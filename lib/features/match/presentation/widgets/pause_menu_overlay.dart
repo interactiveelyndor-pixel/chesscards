@@ -6,6 +6,8 @@ import '../../../../theme/app_colors.dart';
 import '../../../../core/audio/audio_service.dart';
 import '../../../../core/audio/audio_enums.dart';
 import '../../../../core/services/settings_service.dart';
+import '../../../../core/network/network_service.dart';
+import '../../application/match_controller.dart';
 import '../../../menu/presentation/widgets/how_to_play_modal.dart';
 
 class PauseMenuOverlay extends ConsumerStatefulWidget {
@@ -215,6 +217,9 @@ class _PauseMenuOverlayState extends ConsumerState<PauseMenuOverlay> {
           textColor: const Color(0xFFFF6B6B),
           onTap: () {
             audio.stopBgm();
+            if (ref.read(matchControllerProvider).isOnlineMode) {
+              ref.read(networkServiceProvider).leaveMatch();
+            }
             context.go('/menu');
           },
         ),
